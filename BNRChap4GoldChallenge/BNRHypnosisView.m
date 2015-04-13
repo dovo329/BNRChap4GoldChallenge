@@ -41,7 +41,7 @@ UIImage *logoImage;
 
     for (float currentRadius = maxRadius; currentRadius > 0; currentRadius -= 20) {
         [path moveToPoint:CGPointMake(center.x + currentRadius, center.y)];
-
+        
         [path addArcWithCenter:center
                         radius:currentRadius
                     startAngle:0.0
@@ -58,13 +58,46 @@ UIImage *logoImage;
     // Draw the line!
     [path stroke];
     
-    CGRect logoRect = CGRectInset(self.bounds, CGRectGetWidth(self.bounds)/5.0, CGRectGetHeight(self.bounds)/5.0);
     
     CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    CGRect logoRect = CGRectInset(self.bounds, CGRectGetWidth(self.bounds)/5.0, CGRectGetHeight(self.bounds)/5.0);
+    
+    CGFloat locations[2] = { 0.0, 1.0 };
+    CGFloat components[8] = {
+        0.0, 1.0, 0.0, 1.0,   // Start color is green
+        1.0, 1.0, 0.0, 1.0 }; // End color is yellow
+    
+    CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
+    CGContextSaveGState(context);
+
+    
+    CGGradientRef gradient = CGGradientCreateWithColorComponents(colorspace, components, locations, 2);
+    path = nil;
+    path = [[UIBezierPath alloc] init];
+    
+    path.lineWidth = 0;
+    [[UIColor clearColor] setStroke];
+    
+    [path moveToPoint:CGPointMake(CGRectGetMidX(logoRect), CGRectGetMinY(logoRect))];
+    [path addLineToPoint:CGPointMake(CGRectGetMaxX(logoRect), CGRectGetMaxY(logoRect))];
+    [path addLineToPoint:CGPointMake(CGRectGetMinX(logoRect), CGRectGetMaxY(logoRect))];
+    [path moveToPoint:CGPointMake(CGRectGetMidX(logoRect), CGRectGetMinY(logoRect))];
+    [path stroke];
+    [path addClip];
+    
+    CGPoint startPoint = CGPointMake(CGRectGetMidX(logoRect), CGRectGetMinY(logoRect));
+    CGPoint endPoint = CGPointMake(CGRectGetMidX(logoRect), CGRectGetMaxY(logoRect));;
+    CGContextDrawLinearGradient(context, gradient, startPoint, endPoint, 0);
+    CGGradientRelease(gradient);
+    CGColorSpaceRelease(colorspace);
+    CGContextRestoreGState(context);
+    
     CGContextSaveGState(context);
     CGContextSetShadow(context, CGSizeMake(4,7), 3);
     [logoImage drawInRect:logoRect];
     CGContextRestoreGState(context);
+    
 }
 
 @end
